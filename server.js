@@ -59,10 +59,15 @@ app.post('/api/appointments', async (req, res) => {
 
     // Check for time conflicts and travel time
     for (let appointment of appointments) {
+        console.log(`description = ${appointment.description}`);
+        console.log(`appointment location = ${appointment.location}`);
+        console.log(`location = ${location}`);
         const travelTime = await getTravelTime(appointment.location, location);
+        console.log(`travelTime = ${travelTime}`);
         const appointmentEnd = new Date(appointment.dateTime).getTime() + (appointment.duration * 60000); // Convert duration to milliseconds
+        console.log(`appointmentEnd = ${appointmentEnd}`);
         const newAppointmentStart = new Date(dateTime).getTime();
-        
+        console.log(`newAppointmentStart = ${newAppointmentStart}`);
         if (newAppointmentStart - (appointmentEnd + travelTime * 1000) < 0) {
             return res.status(400).json({ message: 'Not enough time to travel to this appointment.' });
         }
