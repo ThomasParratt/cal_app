@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Calendar App</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@6.1.17/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <!-- Calendar Container -->
+  <div id="calendar"></div>
+
+  <!-- Hidden Form for Adding Appointments -->
+  <div id="appointmentForm" style="display: none;">
+    <h3>Add New Appointment</h3>
+    <form id="appointmentFormContent">
+      <label for="dateTime">Date and Time</label>
+      <input type="datetime-local" id="dateTime" name="dateTime" required>
+
+      <label for="location">Location</label>
+      <input type="text" id="location" name="location" required>
+
+      <label for="description">Description</label>
+      <input type="text" id="description" name="description" required>
+
+      <button type="submit">Add Appointment</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var calendarEl = document.getElementById('calendar');
+
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        events: '/api/appointments', // Fetch events from server
+
+        // Open the form when clicking a day
+        dateClick: function(info) {
+          document.getElementById('appointmentForm').style.display = 'block';
+          document.getElementById('dateTime').value = info.dateStr + "T12:00"; // Prefill the date
+        }
+      });
+
+      calendar.render();
+
+      // Handle form submission to add an appointment
+      document.getElementById('appointmentFormContent').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const data = {
+          dateTime: formData.get('dateTime'),
+          location: formData.get('location'),
+          description: formData.get('description')
+        };
+
+        // Send data to server to create a new appointment
+        axios.post('/api/appointments', data)
+          .then(response => {
+            alert('Appointment added successfully!');
+            document.getElementById('appointmentForm').style.display = 'none'; // Close the form
+            calendar.refetchEvents(); // Reload the calendar events
+          })
+          .catch(error => {
+            alert('Error adding appointment: ' + error.response.data.message);
+          });
+      });
+    });
+  </script>
+</body>
+</html>
+
+
