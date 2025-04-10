@@ -38,16 +38,18 @@ async function getTravelTime(origin, destination) {
 // Get all appointments
 app.get('/api/appointments', async (req, res) => {
     try {
-      const appointments = await Appointment.find(); // Fetch all appointments
+      const appointments = await Appointment.find();
       const events = appointments.map(app => ({
+        id: app._id.toString(), // Include the MongoDB ID
         title: app.description,
-        start: app.dateTime.toISOString() // Ensure the date is in ISO format
+        start: app.dateTime.toISOString()
       }));
-      res.json(events); // Send events back as JSON
+      res.json(events);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch appointments' });
     }
   });
+  
   
 
 // Add a new appointment
@@ -86,6 +88,24 @@ app.post('/api/appointments', async (req, res) => {
         res.status(500).json({ message: 'Error saving appointment' });
     }
 });
+
+// Delete an appointment by ID
+app.delete('/api/appointments/:id', async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const deletedAppointment = await Appointment.findByIdAndDelete(id);
+  
+      if (!deletedAppointment) {
+        return res.status(404).json({ message: 'Appointment not found' });
+      }
+  
+      res.status(200).json({ message: 'Appointment deleted successfully' });
+    } catch (err) {
+      res.status(500).json({ message: 'Error deleting appointment' });
+    }
+  });
+  
 
 // Start the server
 app.listen(PORT, () => {
