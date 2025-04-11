@@ -64,13 +64,14 @@ app.post('/api/appointments', async (req, res) => {
         console.log(`description = ${appointment.description}`);
         console.log(`appointment location = ${appointment.location}`);
         console.log(`location = ${location}`);
-        const travelTime = await getTravelTime(appointment.location, location);
+        const travelTime = await getTravelTime(appointment.location, location) * 1000; // Convert seconds to milliseconds
         console.log(`travelTime = ${travelTime}`);
-        const appointmentEnd = new Date(appointment.dateTime).getTime() + (appointment.duration * 60000); // Convert duration to milliseconds
+        const appointmentEnd = new Date(appointment.dateTime).getTime() + (appointment.duration * 60000); // Convert minutes to milliseconds
         console.log(`appointmentEnd = ${appointmentEnd}`);
         const newAppointmentStart = new Date(dateTime).getTime();
         console.log(`newAppointmentStart = ${newAppointmentStart}`);
-        if (newAppointmentStart - (appointmentEnd + travelTime * 1000) < 0) {
+        console.log(`newAppointmentStart - appointmentEnd = ${newAppointmentStart - appointmentEnd}`);
+        if ((newAppointmentStart - appointmentEnd) < travelTime) {
             return res.status(400).json({ message: 'Not enough time to travel to this appointment.' });
         }
     }
@@ -80,7 +81,7 @@ app.post('/api/appointments', async (req, res) => {
             dateTime,
             location,
             description,
-            duration: 30 // Default duration in minutes (can be customized)
+            duration: 90 // Default duration in minutes (can be customized)
         });
         await newAppointment.save();
         res.status(200).json(newAppointment);
