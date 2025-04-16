@@ -35,22 +35,29 @@ async function getTravelTime(origin, destination) {
 
 // Define Routes
 
-// Get all appointments
+// Get appointments
 app.get('/api/appointments', async (req, res) => {
-    try {
-      const appointments = await Appointment.find();
-      const events = appointments.map(app => ({
-        id: app._id.toString(), // Include the MongoDB ID
+  try {
+    const appointments = await Appointment.find();
+    const events = appointments.map(app => {
+      // Calculate the end time by adding the duration (in minutes) to the start time
+      const endTime = new Date(app.dateTime);
+      endTime.setMinutes(endTime.getMinutes() + app.duration); // Add the duration (90 minutes)
+
+      return {
+        id: app._id.toString(),
         title: app.description,
-        start: app.dateTime.toISOString()
-      }));
-      res.json(events);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch appointments' });
-    }
-  });
-  
-  
+        start: app.dateTime.toISOString(),
+        end: endTime.toISOString()  // Set the end time for the event
+      };
+    });
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch appointments' });
+  }
+});
+
+
 
 // Add a new appointment
 app.post('/api/appointments', async (req, res) => {
